@@ -16,6 +16,7 @@ namespace FitFocus.Services
 	{
         public static string GetUrl()
         {
+            return "https://192.168.0.4/api/";
             return "https://fitfocus.cld.education/api/";
         }
 
@@ -142,15 +143,25 @@ namespace FitFocus.Services
             }
             else
             {
-                var client = new HttpClient();
-                var request = new HttpRequestMessage(HttpMethod.Post, Url);
-                var content = new FormUrlEncodedContent(body);
-                request.Content = content;
-                var response = await client.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-                string responseString = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(responseString);
-                return responseString;
+                try
+                {
+                    var client = new HttpClient();
+                    var request = new HttpRequestMessage(HttpMethod.Post, Url);
+                    var content = new FormUrlEncodedContent(body);
+                    //skip the ssl certificates
+                    ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(AcceptAllCertifications);
+                    request.Content = content;
+                    var response = await client.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+                    string responseString = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine(responseString);
+                    return responseString;
+                }
+                catch (HttpRequestException http_ex)
+                {
+                    Debug.WriteLine(http_ex);
+                    throw new Exception();
+                }
             }
         }
     }
